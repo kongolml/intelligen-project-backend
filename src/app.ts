@@ -5,7 +5,7 @@ import { buildAuthenticatedRouter } from '@adminjs/express';
 import provider from './admin/auth-provider.js';
 import options from './admin/options.js';
 import initializeDb from './db/index.js';
-import { importPortfolioItems } from './helpers/import.js';
+import { importPortfolioItems, createMediaFilesFromUrls } from './helpers/import.js';
 
 const port = process.env.PORT || 3000;
 
@@ -46,6 +46,8 @@ console.log("start1")
     // importPortfolioItems().finally(() => {
     //   console.log("import stopped")
     // })
+
+    // createMediaFilesFromUrls("http://intelligent-project.com/wp-content/uploads/identity_akvamarket_02.png", "685da26803d798b6ff386475")
   });
 };
 

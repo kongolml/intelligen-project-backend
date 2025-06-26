@@ -31,12 +31,12 @@ const options: AdminJSOptions = {
         parent: {
           name: 'Portfolio',
           icon: 'Briefcase'
+        },
+        properties: {
+          _id: { isVisible: false },
+          name: { isRequired: true }
         }
       },
-      properties: {
-        _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
-        name: { isRequired: true }
-      }
     },
     {
       resource: PortfolioItem,
@@ -53,24 +53,33 @@ const options: AdminJSOptions = {
           description: {
             type: 'richtext',
             position: 2,
+            isVisible: {
+              list: false,
+              show: true,
+              edit: true,
+              filter: false
+            }
           },
           categories: {
             reference: 'PortfolioCategory', // exact model name
             isArray: true,
-            isVisible: { list: true, show: true, edit: true, filter: true },
             position: 3,
+            isVisible: { list: true, show: true, edit: true, filter: true },
           },
           // Show existing media files (many-to-many relationship)
           mediaFiles: {
             reference: 'MediaFile',
             isArray: true,
             position: 4,
-            isVisible: { list: false, show: true, edit: true, filter: false },
+            isVisible: { list: true, show: true, edit: true, filter: true },
           },
           // Virtual field for uploading new files
           uploadFiles: {
             position: 5,
             isVisible: { list: false, show: false, edit: true, filter: false },
+          },
+          createdAt:{
+            isVisible: false
           }
         },
         actions: {
