@@ -5,12 +5,13 @@ import { buildAuthenticatedRouter } from '@adminjs/express';
 import provider from './admin/auth-provider.js';
 import options from './admin/options.js';
 import initializeDb from './db/index.js';
+import { importPortfolioItems } from './helpers/import.js';
 
 const port = process.env.PORT || 3000;
 
 const start = async () => {
   const app = express();
-console.log("start")
+console.log("start1")
   await initializeDb();
 
   const admin = new AdminJS(options);
@@ -41,6 +42,10 @@ console.log("start")
 
   app.listen(port, () => {
     console.log(`AdminJS available12312312 at http://localhost:${port}${admin.options.rootPath}`);
+
+    // importPortfolioItems().finally(() => {
+    //   console.log("import stopped")
+    // })
   });
 };
 

@@ -8,4 +8,4 @@ export const PortfolioCategorySchema = new Schema<IPortfolioCategory>({
   name: { type: 'String', required: true },
 });
 
-export const PortfolioCategory = model<IPortfolioCategory>('PortfolioCategorie', PortfolioCategorySchema);
+export const PortfolioCategory = model<IPortfolioCategory>('PortfolioCategory', PortfolioCategorySchema);

@@ -10,7 +10,7 @@ import { PortfolioCategory } from '../models/portfolio-category.model.js';
 import { MediaFile } from '../models/file.model.js';
 
 // helpers
-import { generateDateBasedPath } from '../helpers/media-files.js';
+import { generateDateBasedPath, handleMediaFileCreation } from '../helpers/media-files.js';
 
 const spacesProvider = {
   aws: {
@@ -33,6 +33,10 @@ const options: AdminJSOptions = {
           icon: 'Briefcase'
         }
       },
+      properties: {
+        _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
+        name: { isRequired: true }
+      }
     },
     {
       resource: PortfolioItem,
@@ -42,6 +46,7 @@ const options: AdminJSOptions = {
           icon: 'Briefcase'
         },
         properties: {
+          _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
           title: {
             position: 1,
           },
@@ -50,24 +55,32 @@ const options: AdminJSOptions = {
             position: 2,
           },
           categories: {
-            reference: 'PortfolioCategorie', // exact model name
+            reference: 'PortfolioCategory', // exact model name
             isArray: true,
             isVisible: { list: true, show: true, edit: true, filter: true },
             position: 3,
           },
-          uploadMainImage: {
+          // Show existing media files (many-to-many relationship)
+          mediaFiles: {
+            reference: 'MediaFile',
+            isArray: true,
             position: 4,
+            isVisible: { list: false, show: true, edit: true, filter: false },
           },
-          uploadImages: {
+          // Virtual field for uploading new files
+          uploadFiles: {
             position: 5,
-          },
-          mainImage: {
-            isVisible: false,
-          },
-          images: {
-            isVisible: false,
-          },
+            isVisible: { list: false, show: false, edit: true, filter: false },
+          }
         },
+        actions: {
+          new: {
+            after: handleMediaFileCreation
+          },
+          edit: {
+            after: handleMediaFileCreation
+          }
+        }
       },
       features: [
         // Upload for images (multiple)
@@ -75,10 +88,19 @@ const options: AdminJSOptions = {
           provider: spacesProvider,
           multiple: true,
           properties: {
-            key: 'mediaFile', // Field in schema
-            file: 'uploadImages', // Virtual field in AdminJS form,
+            // key: 'mediaFile', // Field in schema
+            // file: 'uploadImages', // Virtual field in AdminJS form,
             // filePath: 'imagesPath',
             // filesToDelete: 'imagesToDelete',
+
+            // This 'key' property in MediaFile schema will store the S3 key
+            key: 's3Key',
+            // This 'bucket' property in MediaFile schema will store the bucket name
+            bucket: 'bucket',
+            // This 'mimeType' property in MediaFile schema will store the mime type
+            mimeType: 'mime',
+            // The virtual field in the PortfolioItem form for the file upload
+            file: 'uploadFiles', // Virtual field for upload
           },
           uploadPath: (record, filename) => {
             const recordId = record.id() || 'temp';
@@ -89,6 +111,9 @@ const options: AdminJSOptions = {
             // This will generate paths like:
             // portfolio/2024/06/24/667a1234567890abcdef1234/1719234567-hero-image.jpg
           },
+          validation: {
+            mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+          },
           componentLoader,
         }),
       ],
@@ -96,15 +121,38 @@ const options: AdminJSOptions = {
     {
       resource: MediaFile,
       options: {
-        // ✅ Hide from navigation but keep as resource for references
-        navigation: false, // This hides it from sidebar
+        parent: {
+          name: 'Portfolio',
+          icon: 'Briefcase'
+        },
+        properties: {
+          _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
+          s3Key: {
+            position: 1,
+            isVisible: { list: true, show: true, edit: false, filter: true },
+          },
+          bucket: {
+            position: 2,
+            isVisible: { list: false, show: true, edit: false, filter: false },
+          },
+          mime: {
+            position: 3,
+            isVisible: { list: true, show: true, edit: false, filter: true },
+          },
+          // Many-to-many relationship - can edit which portfolios this file belongs to
+          portfolioItems: {
+            reference: 'PortfolioItem',
+            isArray: true,
+            position: 4,
+            isVisible: { list: true, show: true, edit: true, filter: true },
+          },
+        },
         actions: {
-          // Optionally disable direct access
-          list: { isAccessible: false },
-          new: { isAccessible: false },
-          edit: { isAccessible: false },
-          delete: { isAccessible: false },
-          show: { isAccessible: false }
+          list: { isAccessible: true },
+          new: { isAccessible: false }, // Files created through PortfolioItem upload
+          edit: { isAccessible: true }, // Can edit relationships
+          delete: { isAccessible: true },
+          show: { isAccessible: true }
         }
       }
     }
