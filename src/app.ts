@@ -6,11 +6,13 @@ import provider from './admin/auth-provider.js';
 import options from './admin/options.js';
 import initializeDb from './db/index.js';
 import { importPortfolioItems, createMediaFilesFromUrls } from './helpers/import.js';
+import publicApiRouter from './routes/public-api.js';
 
 const port = process.env.PORT || 3000;
 
 const start = async () => {
   const app = express();
+
 console.log("start1")
   await initializeDb();
 
@@ -39,6 +41,8 @@ console.log("start1")
   );
 
   app.use(admin.options.rootPath, router);
+
+  app.use('/public-api', publicApiRouter);
 
   app.listen(port, () => {
     console.log(`AdminJS available12312312 at http://localhost:${port}${admin.options.rootPath}`);

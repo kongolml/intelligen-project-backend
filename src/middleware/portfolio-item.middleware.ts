@@ -1,0 +1,82 @@
+// models
+import { PortfolioCategory } from '@models/portfolio-category.model.js';
+import { PortfolioItem } from '@models/portfolio-item.model.js';
+
+const preparePortfolioItemForResponse = (portfolioItems: any) => {
+    return portfolioItems.map((item) => ({
+      id: item._id,
+      title: item.title,
+      description: item.description,
+      categories: item.categories.map((cat) => cat.name),
+      mediaFiles: item.mediaFiles
+    }))
+}
+
+export const getPortfolioCategories = async () => {
+    const allCategories = await PortfolioCategory.find({}, 'name description').sort({ name: 1 }).lean();
+
+    return allCategories.map((category) => ({
+        id: category._id,
+        name: category.name,
+        description: category.description || ''
+    }));
+}
+
+export const getPortfolioItems = async () => {
+    const portfolioItems = await PortfolioItem.find({})
+    //   .populate('name')
+    //   .populate({
+    //     path: 'mediaFiles',
+    //     options: { lean: { virtuals: true } }
+    //   })
+        .populate({
+            path: 'mediaFiles',
+            // ⚠️ DO NOT use `select: 'url'` — `url` is virtual, not a real field
+            select: 'bucket s3Key', // required for computing `url`
+            options: {}, // no lean here — it's already lean on root
+            transform: (doc: any) => ({
+                id: doc._id.toString(),
+                url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_ENDPOINT}/${doc.s3Key}` // manual virtual substitute
+            })
+        })
+        .populate({
+            path: 'categories',
+            select: 'name',
+        })
+        .sort({ createdAt: -1 });
+
+    return preparePortfolioItemForResponse(portfolioItems);
+}
+
+export const getRandomDemoPortfolioItem = async () => {
+    const portfolioCategories = await getPortfolioCategories();
+
+    if (portfolioCategories.length === 0) {
+        throw new Error('No portfolio categories found');
+    }
+
+    const randomPortfolioItemsPromises = portfolioCategories.map(async (category) => {
+        const result = await PortfolioItem.aggregate([
+            {
+                $match: {
+                    'categories': category.id,
+                },
+            },
+            { $sample: { size: 1 } },
+        ]);
+
+        // optionally populate categories
+        if (result[0]) {
+            return await PortfolioItem.populate(result[0], {
+                path: 'categories',
+                select: 'name slug',
+            });
+        }
+
+        return result[0] || null;
+    });
+
+    const portfolioItems = (await Promise.all(randomPortfolioItemsPromises)).filter(Boolean);
+
+    return preparePortfolioItemForResponse(portfolioItems);
+}

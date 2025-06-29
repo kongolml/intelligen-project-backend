@@ -34,7 +34,11 @@ const options: AdminJSOptions = {
         },
         properties: {
           _id: { isVisible: false },
-          name: { isRequired: true }
+          name: { isRequired: true },
+          description: {
+            type: 'richtext',
+            isVisible: { list: false, show: true, edit: true, filter: false },
+          },
         }
       },
     },
