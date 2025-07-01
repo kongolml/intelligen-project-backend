@@ -5,8 +5,9 @@ import { PortfolioItem } from '@models/portfolio-item.model.js';
 const preparePortfolioItemForResponse = (portfolioItems: any) => {
     return portfolioItems.map((item) => ({
       id: item._id,
-      title: item.title,
+      title: item.name,
       description: item.description,
+      mainImage: item.mainImage ? item.mainImage.url : null,
       categories: item.categories.map((cat) => cat.name),
       mediaFiles: item.mediaFiles
     }))
@@ -30,7 +31,7 @@ export const getPortfolioItems = async () => {
     //     options: { lean: { virtuals: true } }
     //   })
         .populate({
-            path: 'mediaFiles',
+            path: 'mediaFiles mainImage',
             // ⚠️ DO NOT use `select: 'url'` — `url` is virtual, not a real field
             select: 'bucket s3Key', // required for computing `url`
             options: {}, // no lean here — it's already lean on root
@@ -67,10 +68,17 @@ export const getRandomDemoPortfolioItem = async () => {
 
         // optionally populate categories
         if (result[0]) {
-            return await PortfolioItem.populate(result[0], {
+            return await PortfolioItem.populate(result[0], [{
                 path: 'categories',
-                select: 'name slug',
-            });
+                select: 'name',
+            }, {
+                path: 'mediaFiles mainImage',
+                select: 's3Key bucket',
+                transform: (doc: any) => ({
+                    id: doc._id.toString(),
+                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                })
+            }]);
         }
 
         return result[0] || null;
@@ -78,5 +86,9 @@ export const getRandomDemoPortfolioItem = async () => {
 
     const portfolioItems = (await Promise.all(randomPortfolioItemsPromises)).filter(Boolean);
 
-    return preparePortfolioItemForResponse(portfolioItems);
+    return preparePortfolioItemForResponse(portfolioItems).map((item) => {
+        const itemWithoutMediaFiles = { ...item };
+        delete itemWithoutMediaFiles.mediaFiles;
+        return itemWithoutMediaFiles;
+    });
 }
