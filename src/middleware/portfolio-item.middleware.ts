@@ -2,6 +2,9 @@
 import { PortfolioCategory } from '@models/portfolio-category.model.js';
 import { PortfolioItem } from '@models/portfolio-item.model.js';
 
+// middleware
+import { prepareMediaFileForResponse } from './media-file.middleware.js';
+
 const preparePortfolioItemForResponse = (portfolioItems: any) => {
     return portfolioItems.map((item) => ({
       id: item._id,
@@ -9,7 +12,7 @@ const preparePortfolioItemForResponse = (portfolioItems: any) => {
       description: item.description,
       mainImage: item.mainImage ? item.mainImage.url : null,
       categories: item.categories.map((cat) => cat.name),
-      mediaFiles: item.mediaFiles
+      mediaFiles: item.mediaFiles.map(prepareMediaFileForResponse)
     }))
 }
 
@@ -91,4 +94,26 @@ export const getRandomDemoPortfolioItem = async () => {
         delete itemWithoutMediaFiles.mediaFiles;
         return itemWithoutMediaFiles;
     });
+}
+
+export const getPortfolioItemById = async (id: string) => {
+    const portfolioItem = await PortfolioItem.findById(id)
+        .populate({
+                path: 'mediaFiles mainImage',
+                select: 's3Key bucket',
+                transform: (doc: any) => ({
+                    id: doc._id.toString(),
+                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                })
+            })
+        .populate({
+            path: 'categories',
+            select: 'name',
+        });
+
+    if (!portfolioItem) {
+        throw new Error('Portfolio item not found');
+    }
+
+    return preparePortfolioItemForResponse([portfolioItem])[0];
 }
