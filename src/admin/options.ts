@@ -35,8 +35,10 @@ const options: AdminJSOptions = {
         properties: {
           _id: { isVisible: false },
           name: { isRequired: true },
+          slug: { isRequired: true },
           description: {
-            type: 'richtext',
+            // type: 'richtext',
+            isRequired: true,
             isVisible: { list: false, show: true, edit: true, filter: false },
           },
         }
@@ -51,9 +53,6 @@ const options: AdminJSOptions = {
         },
         properties: {
           _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
-          title: {
-            position: 1,
-          },
           description: {
             type: 'richtext',
             position: 2,
@@ -66,7 +65,7 @@ const options: AdminJSOptions = {
           },
           categories: {
             reference: 'PortfolioCategory', // exact model name
-            isArray: true,
+            // isArray: true,
             position: 3,
             isVisible: { list: true, show: true, edit: true, filter: true },
           },
@@ -75,7 +74,7 @@ const options: AdminJSOptions = {
             reference: 'MediaFile',
             isArray: true,
             position: 4,
-            isVisible: { list: true, show: true, edit: true, filter: true },
+            isVisible: { list: false, show: true, edit: true, filter: false },
           },
           // Virtual field for uploading new files
           uploadFiles: {
@@ -153,12 +152,12 @@ const options: AdminJSOptions = {
             isVisible: { list: true, show: true, edit: false, filter: true },
           },
           // Many-to-many relationship - can edit which portfolios this file belongs to
-          portfolioItems: {
-            reference: 'PortfolioItem',
-            isArray: true,
-            position: 4,
-            isVisible: { list: true, show: true, edit: true, filter: true },
-          },
+          // portfolioItems: {
+          //   reference: 'PortfolioItem',
+          //   isArray: true,
+          //   position: 4,
+          //   isVisible: { list: true, show: true, edit: true, filter: true },
+          // },
         },
         actions: {
           list: { isAccessible: true },

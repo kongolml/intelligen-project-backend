@@ -1,7 +1,13 @@
 import express from 'express';
 
 // middleware
-import { getPortfolioCategories, getPortfolioItems, getRandomDemoPortfolioItem, getPortfolioItemById } from '../middleware/portfolio-item.middleware.js';
+import {
+  getPortfolioCategories,
+  getPortfolioItems,
+  getRandomDemoPortfolioItem,
+  getPortfolioItemById,
+  getPortFolioShowcases
+} from '../middleware/portfolio-item.middleware.js';
 
 const router = express.Router();
 
@@ -17,13 +23,35 @@ router.get('/portfolio-categories', async (req, res) => {
 
 router.get('/portfolio', async (req, res) => {
   try {
-    const formattedItems = await getPortfolioItems()
+    const formattedItems = await getPortfolioItems();
     res.json(formattedItems);
   } catch (err) {
     console.error('Error fetching portfolio items', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+router.get('/portfolio/showcases', async (req, res) => {
+  try {
+    const portfolioItems = await getPortFolioShowcases(8);
+
+    res.json(portfolioItems);
+  } catch (err) {
+    console.error('Error fetching portfolio random-demo items', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// router.get('/portfolio/random-demo', async (req, res) => {
+//   try {
+//     const portfolioItems = await getRandomDemoPortfolioItem();
+
+//     res.json(portfolioItems);
+//   } catch (err) {
+//     console.error('Error fetching portfolio random-demo items', err);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 router.get('/portfolio/:id', async (req, res) => {
   const { id } = req.params;
@@ -43,17 +71,6 @@ router.get('/portfolio/:id', async (req, res) => {
     console.error('Error fetching portfolio item', err);
     res.status(500).json({ error: 'Internal server error' });
   }
-})
-
-router.get('/portfolio/random-demo', async (req, res) => {
-    try {
-        const portfolioItems = await getRandomDemoPortfolioItem();
-
-        res.json(portfolioItems);
-    } catch (err) {
-        console.error('Error fetching portfolio random-demo items', err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
 });
 
 export default router;

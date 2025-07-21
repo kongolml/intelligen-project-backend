@@ -10,19 +10,22 @@ const preparePortfolioItemForResponse = (portfolioItems: any) => {
       id: item._id,
       title: item.name,
       description: item.description,
-      mainImage: item.mainImage ? item.mainImage.url : null,
-      categories: item.categories.map((cat) => cat.name),
-      mediaFiles: item.mediaFiles.map(prepareMediaFileForResponse)
+      thumbnail: item.thumbnail ? item.thumbnail.url : null,
+      categories: item.categories,
+      mediaFiles: item.mediaFiles.map(prepareMediaFileForResponse),
+      slug: item.slug,
+      isShowcase: item.isShowcase
     }))
 }
 
 export const getPortfolioCategories = async () => {
-    const allCategories = await PortfolioCategory.find({}, 'name description').sort({ name: 1 }).lean();
+    const allCategories = await PortfolioCategory.find({}, 'name slug description').sort({ name: 1 }).lean();
 
     return allCategories.map((category) => ({
         id: category._id,
         name: category.name,
-        description: category.description || ''
+        slug: category.slug,
+        description: category.description
     }));
 }
 
@@ -34,18 +37,23 @@ export const getPortfolioItems = async () => {
     //     options: { lean: { virtuals: true } }
     //   })
         .populate({
-            path: 'mediaFiles mainImage',
+            path: 'mediaFiles thumbnail',
             // ⚠️ DO NOT use `select: 'url'` — `url` is virtual, not a real field
             select: 'bucket s3Key', // required for computing `url`
             options: {}, // no lean here — it's already lean on root
             transform: (doc: any) => ({
                 id: doc._id.toString(),
-                url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_ENDPOINT}/${doc.s3Key}` // manual virtual substitute
+                url: `https://${doc.bucket}.fra1.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
             })
         })
         .populate({
             path: 'categories',
-            select: 'name',
+            select: 'name slug description',
+            transform: (doc: any) => ({
+                name: doc.name,
+                slug: doc.slug,
+                description: doc.description
+            })
         })
         .sort({ createdAt: -1 });
 
@@ -75,7 +83,7 @@ export const getRandomDemoPortfolioItem = async () => {
                 path: 'categories',
                 select: 'name',
             }, {
-                path: 'mediaFiles mainImage',
+                path: 'mediaFiles thumbnail',
                 select: 's3Key bucket',
                 transform: (doc: any) => ({
                     id: doc._id.toString(),
@@ -96,10 +104,44 @@ export const getRandomDemoPortfolioItem = async () => {
     });
 }
 
+export const getPortFolioShowcases = async (limit?: number) => {
+    const portfolioItems = await PortfolioItem.find({
+        isShowcase: true
+    })
+    //   .populate('name')
+    //   .populate({
+    //     path: 'mediaFiles',
+    //     options: { lean: { virtuals: true } }
+    //   })
+        .limit(limit)
+        .populate({
+            path: 'mediaFiles thumbnail',
+            // ⚠️ DO NOT use `select: 'url'` — `url` is virtual, not a real field
+            select: 'bucket s3Key', // required for computing `url`
+            options: {}, // no lean here — it's already lean on root
+            transform: (doc: any) => ({
+                id: doc._id.toString(),
+                url: `https://${doc.bucket}.fra1.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+            })
+        })
+        .populate({
+            path: 'categories',
+            select: 'name slug description',
+            transform: (doc: any) => ({
+                name: doc.name,
+                slug: doc.slug,
+                description: doc.description
+            })
+        })
+        .sort({ createdAt: -1 });
+
+    return preparePortfolioItemForResponse(portfolioItems);
+}
+
 export const getPortfolioItemById = async (id: string) => {
     const portfolioItem = await PortfolioItem.findById(id)
         .populate({
-                path: 'mediaFiles mainImage',
+                path: 'mediaFiles thumbnail',
                 select: 's3Key bucket',
                 transform: (doc: any) => ({
                     id: doc._id.toString(),

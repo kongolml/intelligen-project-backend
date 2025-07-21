@@ -2,12 +2,16 @@ import { model, Schema } from 'mongoose';
 
 export interface IPortfolioCategory {
   name: string;
-  description?: string; // Optional field for future use
+  slug: string;
+  description: string;
 }
 
 export const PortfolioCategorySchema = new Schema<IPortfolioCategory>({
   name: { type: 'String', required: true },
-  description: { type: 'String', required: false },
+  slug: { type: 'String', required: true, unique: true },
+  description: { type: 'String', required: true },
+}, {
+  collection: 'portfolio_categories',
 });
 
 export const PortfolioCategory = model<IPortfolioCategory>('PortfolioCategory', PortfolioCategorySchema);

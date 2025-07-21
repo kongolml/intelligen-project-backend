@@ -66,7 +66,7 @@ export async function handleMediaFileCreation(response: any, request: any, conte
             s3Key: fileData.s3Key || fileData.key,
             bucket: fileData.bucket || process.env.DIGITALOCEAN_SPACE_BUCKET,
             mime: fileData.mime || fileData.mimeType || 'application/octet-stream',
-            portfolioItems: [new mongoose.Types.ObjectId(portfolioItemId)]
+            // portfolioItems: [new mongoose.Types.ObjectId(portfolioItemId)]
           };
 
           const mediaFile = new MediaFile(mediaFileData);

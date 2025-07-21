@@ -4,16 +4,17 @@ interface IMediaFile {
   s3Key: string;
   bucket: string;
   mime: string;
-  portfolioItems: mongoose.Schema.Types.ObjectId[];
+  // portfolioItems: mongoose.Schema.Types.ObjectId[];
 }
 
 const MediaFileSchema = new Schema<IMediaFile>({
   s3Key: { type: String, required: true },
   bucket: { type: String, required: true },
   mime: { type: String, required: true },
-  portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
+  // portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
 }, {
   timestamps: true,
+  collection: 'media_files',
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
@@ -24,7 +25,7 @@ MediaFileSchema.virtual('url').get(function() {
 });
 
 // Indexes for better performance
-MediaFileSchema.index({ portfolioItems: 1 });
-MediaFileSchema.index({ mime: 1 });
+// MediaFileSchema.index({ portfolioItems: 1 });
+// MediaFileSchema.index({ mime: 1 });
 
 export const MediaFile = model<IMediaFile>('MediaFile', MediaFileSchema);
