@@ -21,7 +21,7 @@ const MediaFileSchema = new Schema<IMediaFile>({
 
 // Virtual to get file URL
 MediaFileSchema.virtual('url').get(function() {
-  return `https://${this.bucket}.${process.env.DIGITALOCEAN_SPACE_ENDPOINT}/${this.s3Key}`;
+  return `https://${this.bucket}.${process.env.DIGITALOCEAN_SPACE_HOST}/${this.s3Key}`;
 });
 
 // Indexes for better performance

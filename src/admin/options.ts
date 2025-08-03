@@ -2,7 +2,7 @@ import { AdminJSOptions } from 'adminjs';
 import uploadFeature from '@adminjs/upload';
 import AWS from 'aws-sdk';
 
-import componentLoader from './component-loader.js';
+import {componentLoader, Components} from './component-loader.js';
 
 // models
 import { PortfolioItem } from '../models/portfolio-item.model.js';
@@ -160,11 +160,56 @@ const options: AdminJSOptions = {
           // },
         },
         actions: {
-          list: { isAccessible: true },
+          // list: { isAccessible: true, component: Components.MediaFileCustomPage,
+          //   label: 'Media files library',
+          //   handler: async (request, response, context) => {
+          //     // For example, fetch all files (with mongoose):
+          //     const { resource, currentAdmin } = context
+          //     const records = await resource.find({}) // all records; add filters as needed
+        
+          //     // You can map/transform records as needed:
+          //     const mediaFiles = records.map(r => r.toJSON(currentAdmin))
+        
+          //     // Return as props:
+          //     return {
+          //       mediaFiles,
+          //       someOtherValue: 123,
+          //     }
+          //   }
+          // },
+          list: {
+            isAccessible: true,
+            label: 'Media Files Library',
+            component: Components.MediaFileCustomPage,
+            // No handler—fetch data in React using ApiClient
+          },
+          getMediaFiles: {
+            actionType: 'resource',
+            isVisible: false, // hidden from UI
+            handler: async (request, response, context) => {
+              const { resource, currentAdmin } = context
+              const records = await resource.find({}, { limit: 10000 }); // or any large number you want
+              const mediaFiles = records.map(r => r.toJSON(currentAdmin))
+              return {
+                mediaFiles,
+                someOtherValue: 123,
+              }
+            }
+          },
           new: { isAccessible: false }, // Files created through PortfolioItem upload
           edit: { isAccessible: true }, // Can edit relationships
           delete: { isAccessible: true },
-          show: { isAccessible: true }
+          show: { isAccessible: true },
+          // customPage: {
+          //   actionType: 'resource',
+          //   label: 'Custom Page',
+          //   icon: 'Document',
+          //   component: Components.MediaFileCustomPage,
+          //   isVisible: true,
+          //   handler: async (request, response, context) => {
+          //     return {};
+          //   }
+          // }
         }
       }
     }
