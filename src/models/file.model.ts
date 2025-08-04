@@ -8,9 +8,9 @@ interface IMediaFile {
 }
 
 const MediaFileSchema = new Schema<IMediaFile>({
-  s3Key: { type: String, required: true },
-  bucket: { type: String, required: true },
-  mime: { type: String, required: true },
+  s3Key: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
+  bucket: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
+  mime: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
   // portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
 }, {
   timestamps: true,

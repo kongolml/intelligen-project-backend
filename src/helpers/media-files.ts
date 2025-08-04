@@ -24,11 +24,11 @@ export const generateDateBasedPath = (category, recordId = null, filename) => {
   const cleanFilename = `${timestamp}-${baseName}${ext}`;
 
   // Create path structure
-  // if (recordId) {
-    // return `${category}/${year}/${month}/${day}/${recordId}/${cleanFilename}`;
-  // } else {
+  if (recordId && recordId !== 'temp') {
+    return `${category}/${year}/${month}/${day}/${recordId}/${cleanFilename}`;
+  } else {
     return `${category}/${year}/${month}/${day}/${cleanFilename}`;
-  // }
+  }
 }
 
 export async function handleMediaFileCreation(response: any, request: any, context: any) {

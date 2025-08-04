@@ -1,6 +1,7 @@
 import express from 'express';
 import AdminJS from 'adminjs';
 import { buildAuthenticatedRouter } from '@adminjs/express';
+import expressFormidable from 'express-formidable';
 
 import provider from './admin/auth-provider.js';
 import options from './admin/options.js';
@@ -39,6 +40,28 @@ console.log("start1")
       resave: true,
     },
   );
+
+  // app.use(admin.options.rootPath, expressFormidable({
+  //   multiples: true,
+  //   keepExtensions: true,
+  // }));
+
+  // app.use((req, res, next) => {
+  //   if (req.  les) {
+  //     const remapped = {}
+  //     for (const key of Object.keys(req.files)) {
+  //       if (key.endsWith('.0')) {
+  //         const baseKey = key.replace('.0', '')
+  //         remapped[baseKey] = req.files[key]
+  //       } else {
+  //         remapped[key] = req.files[key]
+  //       }
+  //     }
+  //     req.files = remapped
+  //   }
+  //   next()
+  // })
+  
 
   app.use(admin.options.rootPath, router);
 
