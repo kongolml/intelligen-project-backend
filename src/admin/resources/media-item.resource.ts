@@ -22,10 +22,7 @@ export const mediaFileResource = {
       _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
       s3Key: {
         position: 1,
-        isVisible: { list: true, show: true, edit: true, filter: true, new: true },
-        defaultValue: function () {
-          return 'test';
-        },
+        isVisible: { list: false, show: false, edit: false, filter: false, new: false }
       },
       bucket: {
         position: 2,
@@ -40,32 +37,12 @@ export const mediaFileResource = {
         type: 'mixed',
         isVisible: { list: false, show: false, edit: true, filter: false, new: true },
       },
-      // Many-to-many relationship - can edit which portfolios this file belongs to
-      // portfolioItems: {
-      //   reference: 'PortfolioItem',
-      //   isArray: true,
-      //   position: 4,
-      //   isVisible: { list: true, show: true, edit: true, filter: true },
-      // },
+    },
+    sort: {
+      sortBy: 'createdAt',
+      direction: 'desc',
     },
     actions: {
-      // list: { isAccessible: true, component: Components.MediaFileCustomPage,
-      //   label: 'Media files library',
-      //   handler: async (request, response, context) => {
-      //     // For example, fetch all files (with mongoose):
-      //     const { resource, currentAdmin } = context
-      //     const records = await resource.find({}) // all records; add filters as needed
-
-      //     // You can map/transform records as needed:
-      //     const mediaFiles = records.map(r => r.toJSON(currentAdmin))
-
-      //     // Return as props:
-      //     return {
-      //       mediaFiles,
-      //       someOtherValue: 123,
-      //     }
-      //   }
-      // },
       list: {
         isAccessible: true,
         label: 'Media Files Library',
@@ -86,60 +63,11 @@ export const mediaFileResource = {
         },
       },
       new: {
-        isAccessible: true,
-        before: async (request, context) => {
-          console.log('✅ BEFORE payload:', request.payload);
-          console.log('✅ BEFORE files:', (request as any).files);
-          console.log('✅ BEFORE uploadFile:', request.payload?.uploadFile);
-          console.log('✅ BEFORE file keys:', Object.keys((request as any).files || {}));
-
-          // if (request?.files?.['uploadFile.0']) {
-          //   console.log('✅ BEFORE uploadFile mapping of file:', request.files['uploadFile.0']);
-          //   request.files.uploadFile = request.files['uploadFile.0'];
-          //   delete request.files['uploadFile.0'];
-          // }
-
-          // console.log('✅ AFTER files:', (request as any).files);
-          // console.log('✅ AFTER uploadFile mapping of file:', request.files.uploadFile);
-          // // request.payload.uploadFile = request.files.uploadFile;
-
-          // request.files.uploadFile["key"] = "uploadFile-custom-key";
-          // request.files.uploadFile["bucket"] = "uploadFile-custom-bucket";
-          // request.files.uploadFile["mime"] = "uploadFile-custom-mime";
-          // request.files.uploadFile["file"] = "uploadFile-custom-file";
-
-          // const rawFiles = (request as any).files || {};
-
-          // // Fix if file is in `uploadFile.0` instead of `uploadFile`
-          // if (rawFiles['uploadFile.0']) {
-          //   request.files.uploadFile = rawFiles['uploadFile.0'];
-          //   delete request.files['uploadFile.0'];
-          // }
-
-          return request;
-        },
-        after: async (response, request, context) => {
-          console.log('✅ AFTER response:', response.record?.params);
-          console.log('✅ AFTER s3Key:', response.record?.params?.s3Key);
-          console.log('✅ AFTER bucket:', response.record?.params?.bucket);
-          console.log('✅ AFTER mime:', response.record?.params?.mime);
-          console.log('record:', response.record?.toJSON?.());
-          return response;
-        },
+        isAccessible: true
       },
       edit: { isAccessible: true }, // Can edit relationships
       delete: { isAccessible: true },
       show: { isAccessible: true },
-      // customPage: {
-      //   actionType: 'resource',
-      //   label: 'Custom Page',
-      //   icon: 'Document',
-      //   component: Components.MediaFileCustomPage,
-      //   isVisible: true,
-      //   handler: async (request, response, context) => {
-      //     return {};
-      //   }
-      // }
     },
   },
   features: [
@@ -154,8 +82,7 @@ export const mediaFileResource = {
       },
       uploadPath: (record, filename) => {
         const recordId = record.id() || 'temp';
-        const path = generateDateBasedPath('media', recordId, filename);
-        console.log('📁 Upload path generated:', path);
+        const path = generateDateBasedPath(recordId, filename);
         return path;
       },
       validation: {

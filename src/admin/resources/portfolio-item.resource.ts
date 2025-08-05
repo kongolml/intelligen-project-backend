@@ -85,7 +85,7 @@ export const portfolioItemResource = {
         const recordId = record.id() || 'temp';
 
         // Date-organized path with portfolio item ID
-        return generateDateBasedPath('portfolio', recordId, filename);
+        return generateDateBasedPath(recordId, filename);
 
         // This will generate paths like:
         // portfolio/2024/06/24/667a1234567890abcdef1234/1719234567-hero-image.jpg

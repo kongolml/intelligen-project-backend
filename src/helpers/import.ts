@@ -1067,7 +1067,7 @@ async function downloadAndCreateMediaFile(imageUrl: string, portfolioItemId?: st
     const contentType = response.headers.get('content-type') || `image/${extension}`;
 
     // 3. Generate S3 key
-    const s3Key = generateDateBasedPath('portfolio', null, originalFilename);
+    const s3Key = generateDateBasedPath(null, originalFilename);
 
     const s3 = new AWS.S3({
       endpoint: spacesProvider.aws.endpoint,

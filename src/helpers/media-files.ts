@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { MediaFile } from '../models/file.model.js';
 import { PortfolioItem } from '../models/portfolio-item.model.js';
 
-export const generateDateBasedPath = (category, recordId = null, filename) => {
+export const generateDateBasedPath = (recordId = null, filename) => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -24,11 +24,11 @@ export const generateDateBasedPath = (category, recordId = null, filename) => {
   const cleanFilename = `${timestamp}-${baseName}${ext}`;
 
   // Create path structure
-  if (recordId && recordId !== 'temp') {
-    return `${category}/${year}/${month}/${day}/${recordId}/${cleanFilename}`;
-  } else {
-    return `${category}/${year}/${month}/${day}/${cleanFilename}`;
-  }
+  // if (recordId && recordId !== 'temp') {
+    // return `portfolio/${year}/${month}/${day}/${recordId}/${cleanFilename}`;
+  // } else {
+    return `portfolio/${year}/${month}/${day}/${cleanFilename}`;
+  // }
 }
 
 export async function handleMediaFileCreation(response: any, request: any, context: any) {
