@@ -5,6 +5,7 @@ const componentLoader = new ComponentLoader();
 
 const Components = {
     MediaFileCustomPage: componentLoader.add('MediaFileCustomPage', './components/MediaFileCustomPage.tsx'),
+    CategoriesList: componentLoader.add('CategoriesList', './components/CategoriesList.tsx'),
     // other custom components
 }
 
