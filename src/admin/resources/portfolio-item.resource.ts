@@ -1,6 +1,7 @@
 // import uploadFeature from '@adminjs/upload';
 
 // models
+import { themeReducer } from 'adminjs';
 import { PortfolioItem } from '../../models/portfolio-item.model.js';
 
 // helpers
@@ -45,6 +46,13 @@ export const portfolioItemResource = {
         isArray: true,
         position: 4,
         isVisible: { list: false, show: true, edit: true, filter: false },
+      },
+      thumbnail: {
+        reference: 'MediaFile',
+        isVisible: { list: false, show: true, edit: true, filter: false },
+        // components: {
+        //   list: Components.MediaFileCustomPage
+        // }
       },
       // Virtual field for uploading new files
       // uploadFiles: {

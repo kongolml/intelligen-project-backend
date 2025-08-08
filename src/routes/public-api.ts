@@ -6,6 +6,7 @@ import {
   getPortfolioItems,
   getRandomDemoPortfolioItem,
   getPortfolioItemById,
+  getPortfolioItemBySlug,
   getPortFolioShowcases
 } from '../middleware/portfolio-item.middleware.js';
 
@@ -53,14 +54,34 @@ router.get('/portfolio/showcases', async (req, res) => {
 //   }
 // });
 
-router.get('/portfolio/:id', async (req, res) => {
-  const { id } = req.params;
+// router.get('/portfolio/:id', async (req, res) => {
+//   const { id } = req.params;
+
+//   try {
+//     // const portfolioItems = await getPortfolioItemById(id);
+//     // const item = portfolioItems.find((item) => item.id === id);
+
+//     const item = await getPortfolioItemById(id);
+
+//     if (!item) {
+//       return res.status(404).json({ error: 'Portfolio item not found' });
+//     }
+
+//     res.json(item);
+//   } catch (err) {
+//     console.error('Error fetching portfolio item', err);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+router.get('/portfolio/:slug', async (req, res) => {
+  const { slug } = req.params;
 
   try {
     // const portfolioItems = await getPortfolioItemById(id);
     // const item = portfolioItems.find((item) => item.id === id);
 
-    const item = await getPortfolioItemById(id);
+    const item = await getPortfolioItemBySlug(slug);
 
     if (!item) {
       return res.status(404).json({ error: 'Portfolio item not found' });

@@ -159,3 +159,31 @@ export const getPortfolioItemById = async (id: string) => {
 
     return preparePortfolioItemForResponse([portfolioItem])[0];
 }
+
+export const getPortfolioItemBySlug = async (slug: string) => {
+    const portfolioItem = await PortfolioItem.findOne({ slug })
+        .populate({
+                path: 'mediaFiles thumbnail',
+                select: 's3Key bucket',
+                transform: (doc: any) => ({
+                    id: doc._id.toString(),
+                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                })
+            })
+        .populate({
+            path: 'categories',
+            select: 'name slug description',
+            transform: (doc: any) => ({
+                name: doc.name,
+                slug: doc.slug,
+                description: doc.description
+            })
+        })
+        .lean(); // Use lean() for better performance when you don't need Mongoose document methods
+
+    if (!portfolioItem) {
+        throw new Error('Portfolio item not found');
+    }
+
+    return preparePortfolioItemForResponse([portfolioItem])[0];
+}

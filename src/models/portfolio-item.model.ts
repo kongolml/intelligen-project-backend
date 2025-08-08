@@ -28,4 +28,10 @@ export const PortfolioItemSchema = new Schema<IPortfolioItem>(
   },
 );
 
+// Indexes for better performance
+PortfolioItemSchema.index({ slug: 1 }); // Single field index for slug lookups
+// PortfolioItemSchema.index({ isShowcase: 1 }); // Index for showcase filtering
+// PortfolioItemSchema.index({ categories: 1 }); // Index for category-based queries
+// PortfolioItemSchema.index({ createdAt: -1 }); // Index for sorting by creation date
+
 export const PortfolioItem = model<IPortfolioItem>('PortfolioItem', PortfolioItemSchema);
