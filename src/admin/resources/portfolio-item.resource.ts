@@ -22,7 +22,8 @@ export const portfolioItemResource = {
     properties: {
       _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
       description: {
-        type: 'richtext',
+        // type: 'richtext',
+        type: 'mixed', // Mixed JSON – we’ll edit with a custom component
         position: 2,
         isVisible: {
           list: false,
@@ -30,6 +31,10 @@ export const portfolioItemResource = {
           edit: true,
           filter: false,
         },
+        components: {
+          show: Components.EditorJSShow,
+          edit: Components.EditorJSEdit
+        }
       },
       categories: {
         reference: 'PortfolioCategory', // exact model name
@@ -63,6 +68,18 @@ export const portfolioItemResource = {
         isVisible: false,
       },
     },
+    // actions: {
+    //   edit: {
+    //     before: async (req) => {
+    //       const key = 'description';
+    //       const val = req?.payload?.[key];
+    //       if (typeof val === 'string' && val.trim().startsWith('{')) {
+    //         req.payload[key] = JSON.parse(val);
+    //       }
+    //       return req;
+    //     },
+    //   }
+    // }
     // actions: {
     //   new: {
     //     after: handleMediaFileCreation,

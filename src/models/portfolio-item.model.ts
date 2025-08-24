@@ -2,7 +2,7 @@ import mongoose, { model, Schema } from 'mongoose';
 
 export interface IPortfolioItem {
   name: string;
-  description: string;
+  description: [Schema.Types.Mixed];
   categories: mongoose.Schema.Types.ObjectId[];
   thumbnail?: mongoose.Schema.Types.ObjectId;
   mediaFiles?: mongoose.Schema.Types.ObjectId[];
@@ -13,7 +13,7 @@ export interface IPortfolioItem {
 export const PortfolioItemSchema = new Schema<IPortfolioItem>(
   {
     name: { type: String, required: true },
-    description: { type: String },
+    description: { type: [Schema.Types.Mixed] },
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PortfolioCategory' }],
     thumbnail: { type: mongoose.Schema.Types.ObjectId, ref: 'MediaFile' },
     mediaFiles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MediaFile' }],
