@@ -64,7 +64,7 @@ const EditorJSEdit = (props) => {
       tools: {
         paragraph: Paragraph,
         header: Header,
-        // list: List,
+        list: List,
       },
       async onChange() {
         // Debounce a little to reduce churn
