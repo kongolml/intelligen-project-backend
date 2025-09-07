@@ -4,6 +4,10 @@ import EditorJS from '@editorjs/editorjs';
 import Paragraph from '@editorjs/paragraph';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
+import ImageTool from '@editorjs/image';
+
+// helpers
+import { convertEditorJSDataToAdminJS, convertAdminJSDataToEditorJS } from '../../helpers/editorjs-adminjs.js';
 
 /** @type {import('adminjs').BasePropertyProps} */
 const EditorJSEdit = (props) => {
@@ -13,39 +17,13 @@ const EditorJSEdit = (props) => {
   const editorRef = useRef(null);
 
   // Guards to prevent focus loss
-  const hydratedOnceRef = useRef(false);      // did we hydrate from server once?
-  const fromEditorRef = useRef(false);        // was the last change triggered by our onChange?
-  const lastSentJSONRef = useRef('');         // last JSON we sent to AdminJS (to avoid redundant updates)
-  const saveTimerRef = useRef(null);          // debounce timer
-
-  // Unflatten AdminJS params like "description.0.data.text" -> blocks[0].data.text
-  const unflattenBlocks = (params, basePath) => {
-    if (!params) return [];
-    const re = new RegExp(`^${escapeRegExp(basePath)}\\.(\\d+)\\.(.+)$`);
-    const acc = [];
-    for (const [k, v] of Object.entries(params)) {
-      const m = k.match(re);
-      if (!m) continue;
-      const idx = Number(m[1]);
-      const tail = m[2].split('.');
-      acc[idx] = acc[idx] || {};
-      setDeep(acc[idx], tail, v);
-    }
-    return acc.filter(Boolean);
-  };
-  const setDeep = (obj, parts, value) => {
-    let o = obj;
-    for (let i = 0; i < parts.length - 1; i++) {
-      const p = parts[i];
-      o[p] = o[p] ?? {};
-      o = o[p];
-    }
-    o[parts[parts.length - 1]] = value;
-  };
-  const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hydratedOnceRef = useRef(false); // did we hydrate from server once?
+  const fromEditorRef = useRef(false); // was the last change triggered by our onChange?
+  const lastSentJSONRef = useRef(''); // last JSON we sent to AdminJS (to avoid redundant updates)
+  const saveTimerRef = useRef(null); // debounce timer
 
   const storedBlocks = useMemo(
-    () => unflattenBlocks(record?.params || {}, path),
+    () => convertAdminJSDataToEditorJS(record?.params || {}, 'description'),
     [record?.params, path]
   );
   const storedBlocksJSON = useMemo(() => JSON.stringify(storedBlocks), [storedBlocks]);
@@ -59,12 +37,46 @@ const EditorJSEdit = (props) => {
     const editor = new EditorJS({
       holder: holderId,
       data: {
+        // @ts-ignore
         blocks: storedBlocks?.length ? storedBlocks : [{ type: 'paragraph', data: { text: '' } }],
       },
       tools: {
         paragraph: Paragraph,
         header: Header,
         list: List,
+        image: {
+          class: ImageTool,
+          config: {
+            uploader: {
+              async uploadByFile(file: File) {
+                const form = new FormData();
+                form.append('file', file);
+                form.append('portfolioItemId', record?.params?.portfolioItemId);
+                // http://localhost:3000/public-api
+                const res = await fetch('/public-api/admin/api/editorjs/upload', {
+                  method: 'POST',
+                  body: form,
+                  credentials: 'include',
+                });
+
+                if (!res.ok) throw new Error('Upload failed');
+                const json = await res.json();
+                return json; // must be { success: 1, file: { url, ... } }
+              },
+              // async uploadByUrl(url: string) {
+              //   const res = await fetch("/admin/api/editorjs/fetch", {
+              //     method: "POST",
+              //     headers: { "Content-Type": "application/json" },
+              //     credentials: "include",
+              //     body: JSON.stringify({ url }),
+              //   });
+              //   if (!res.ok) throw new Error("Fetch failed");
+              //   const json = await res.json();
+              //   return json; // must be { success: 1, file: { url, ... } }
+              // },
+            },
+          },
+        },
       },
       async onChange() {
         // Debounce a little to reduce churn
@@ -75,11 +87,13 @@ const EditorJSEdit = (props) => {
             const blocks = output.blocks || [];
             const json = JSON.stringify(blocks);
 
+            const adminJSData = convertEditorJSDataToAdminJS(blocks);
+
             // Avoid echo loops: only send if changed vs lastSent
             if (json !== lastSentJSONRef.current) {
-              fromEditorRef.current = true;         // mark that the next param change is ours
+              fromEditorRef.current = true; // mark that the next param change is ours
               lastSentJSONRef.current = json;
-              onChange(path, blocks);               // send JSON array; AdminJS will flatten
+              onChange(path, adminJSData); // send JSON array; AdminJS will flatten
             }
           } catch (e) {
             // ignore
@@ -111,24 +125,22 @@ const EditorJSEdit = (props) => {
     if (!hydratedOnceRef.current) {
       hydratedOnceRef.current = true;
       const nextBlocks = JSON.parse(storedBlocksJSON);
-      editor.isReady
-        .then(() => editor.render({ blocks: nextBlocks }))
-        .catch(() => {});
+      editor.isReady.then(() => editor.render({ blocks: nextBlocks.description.blocks })).catch(console.error);
     }
   }, [storedBlocksJSON]);
 
   return (
     <>
-    <div style={{ border: '1px solid #D9D9D9', borderRadius: 6, padding: 8 }}>
-      <div id={holderId} style={{ minHeight: 220 }} />
-    </div>
-    <style>
-  {`
+      <div style={{ border: '1px solid #D9D9D9', borderRadius: 6, padding: 8 }}>
+        <div id={holderId} style={{ minHeight: 220 }} />
+      </div>
+      <style>
+        {`
     #${holderId} .ce-header { font-weight: 600; line-height: 1.3; margin: 12px 0; }
     #${holderId} .ce-header[contenteditable="true"]:empty:before { content: 'Heading'; opacity: .4; }
   `}
-</style></>
-    
+      </style>
+    </>
   );
 };
 

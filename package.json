@@ -8,7 +8,7 @@
     "prestart": "npm run build",
     "start": "dotenv -c '.env' -- node dist/app",
     "dev": "dotenv -c '.env' -- tsx watch src/app.ts",
-    "dev:debug": "dotenv -c '.env' -- tsx watch --inspect=0.0.0.0:9229 src/app.ts"
+    "dev:debug": "dotenv -c '.env' -- tsx watch --inspect=0.0.0.0:9229 --enable-source-maps src/app.ts"
   },
   "dependencies": {
     "@adminjs/express": "^6.1.1",
@@ -16,6 +16,7 @@
     "@adminjs/upload": "^4.0.2",
     "@editorjs/editorjs": "^2.30.8",
     "@editorjs/header": "^2.8.8",
+    "@editorjs/image": "^2.10.3",
     "@editorjs/list": "^2.0.8",
     "@editorjs/paragraph": "^2.11.7",
     "adminjs": "^7.7.2",
@@ -24,6 +25,7 @@
     "express-formidable": "^1.2.0",
     "express-session": "^1.17.3",
     "mongoose": "^8.0.0",
+    "multer": "^2.0.2",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {

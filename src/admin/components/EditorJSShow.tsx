@@ -1,5 +1,6 @@
 // admin/components/EditorJSShow.jsx
 import React from 'react';
+// import { parseEditorJS, parseEditorJSBlock } from '../../helpers/editorjs-parser.js';
 
 /** @type {import('adminjs').BasePropertyProps} */
 const EditorJSShow = (props) => {
@@ -10,6 +11,30 @@ const EditorJSShow = (props) => {
 
   if (!blocks.length) return <div style={{ opacity: 0.6 }}>No content</div>;
 
+  // Option 1: Use HTML parser (simpler, more consistent)
+  // const useHTMLParser = true; // Set to false to use the original React rendering
+
+  // if (useHTMLParser) {
+  //   try {
+  //     const htmlContent = parseEditorJS({ blocks });
+  //     return (
+  //       <div 
+  //         style={{ 
+  //           border: '1px solid #e0e0e0', 
+  //           borderRadius: 4, 
+  //           padding: 12,
+  //           backgroundColor: '#fafafa'
+  //         }}
+  //         dangerouslySetInnerHTML={{ __html: htmlContent }}
+  //       />
+  //     );
+  //   } catch (error) {
+  //     console.error('Error parsing EditorJS content:', error);
+  //     // Fallback to original rendering
+  //   }
+  // }
+
+  // Option 2: Original React component rendering (more control, more verbose)
   return (
     <div>
       {blocks.map((b, i) => {
@@ -29,7 +54,7 @@ const EditorJSShow = (props) => {
             </ol>
           ) : (
             <ul key={i}>
-              {items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
+              {typeof items === 'object' ? Object.values(items).map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />) : items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
             </ul>
           );
         }

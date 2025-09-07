@@ -1108,3 +1108,49 @@ async function downloadAndCreateMediaFile(imageUrl: string, portfolioItemId?: st
     throw new Error(`Download/upload failed: ${error.message}`);
   }
 }
+
+export async function uploadFileAndCreateDbRecord(
+  buffer: Buffer,
+  contentType: string,
+  portfolioItemId?: string,
+  originalName?: string
+): Promise<any> {
+  const originalFilename = originalName || 'manuallyupplaoded-test.png'; // urlParts.pathname.split('/').pop() || 'image';
+
+  const s3Key = generateDateBasedPath(null, originalFilename);
+
+    const s3 = new AWS.S3({
+      endpoint: spacesProvider.aws.endpoint,
+      accessKeyId: process.env.DIGITALOCEAN_SPACE_ACCESS_KEY!,
+      secretAccessKey: process.env.DIGITALOCEAN_SPACE_SECRET_KEY!,
+      region: spacesProvider.aws.region,
+    });
+
+    // 4. Upload to S3/Digital Ocean Spaces
+    await s3
+      .upload({
+        Bucket: process.env.DIGITALOCEAN_SPACE_BUCKET!,
+        Key: s3Key,
+        Body: buffer,
+        ContentType: contentType,
+        ACL: 'public-read', // Make images publicly accessible
+      })
+      .promise();
+
+    // 5. Create MediaFile record
+    const mediaFile = new MediaFile({
+      s3Key,
+      bucket: process.env.DIGITALOCEAN_SPACE_BUCKET!,
+      mime: contentType,
+      originalName: originalFilename,
+      size: buffer.length,
+      portfolioItems: portfolioItemId ? [portfolioItemId] : [], // Empty initially
+      metadata: {
+        // sourceUrl: imageUrl,
+        importedAt: new Date(),
+        importMethod: 'uploadFileAndCreateDbRecord-upload',
+      },
+    });
+
+    return await mediaFile.save();
+}
