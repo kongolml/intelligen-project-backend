@@ -1,113 +1,48 @@
 // admin/components/EditorJSShow.jsx
 import React from 'react';
-// import { parseEditorJS, parseEditorJSBlock } from '../../helpers/editorjs-parser.js';
+
+// types
+import { EditorJSDataBlockTypesEnum } from '../../types/editorjs.types.js';
+
+// helpers
+import { convertAdminJSDataToEditorJS } from '../../helpers/editorjs-adminjs.js';
 
 /** @type {import('adminjs').BasePropertyProps} */
 const EditorJSShow = (props) => {
   const { property, record } = props;
   const path = property?.path || property?.name;
 
-  const blocks = getBlocks(record, path);
+  // @ts-ignore
+  const blocks = convertAdminJSDataToEditorJS(record.params, path).description.blocks;
 
   if (!blocks.length) return <div style={{ opacity: 0.6 }}>No content</div>;
 
-  // Option 1: Use HTML parser (simpler, more consistent)
-  // const useHTMLParser = true; // Set to false to use the original React rendering
-
-  // if (useHTMLParser) {
-  //   try {
-  //     const htmlContent = parseEditorJS({ blocks });
-  //     return (
-  //       <div 
-  //         style={{ 
-  //           border: '1px solid #e0e0e0', 
-  //           borderRadius: 4, 
-  //           padding: 12,
-  //           backgroundColor: '#fafafa'
-  //         }}
-  //         dangerouslySetInnerHTML={{ __html: htmlContent }}
-  //       />
-  //     );
-  //   } catch (error) {
-  //     console.error('Error parsing EditorJS content:', error);
-  //     // Fallback to original rendering
-  //   }
-  // }
-
-  // Option 2: Original React component rendering (more control, more verbose)
   return (
     <div>
       {blocks.map((b, i) => {
-        if (b.type === 'header') {
-          const Tag = `h${b.data?.level || 2}`;
-        //   @ts-ignore
-          return <Tag key={i} dangerouslySetInnerHTML={{ __html: b.data?.text || '' }} />;
+        switch (b.type) {
+          case EditorJSDataBlockTypesEnum.HEADER:
+            const Tag = `h${b.data?.level || 2}` as keyof JSX.IntrinsicElements;
+            return <Tag key={i} dangerouslySetInnerHTML={{ __html: b.data?.text || '' }} />;
+          case EditorJSDataBlockTypesEnum.PARAGRAPH:
+            return <p key={i} dangerouslySetInnerHTML={{ __html: b.data?.text || '' }} />;
+          case EditorJSDataBlockTypesEnum.LIST:
+            const items = b.data?.items || [];
+            return b.data?.style === 'ordered' ? (
+              <ol key={i}>
+                {items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
+              </ol>
+            ) : (
+              <ul key={i}>
+                {typeof items === 'object' ? Object.values(items).map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />) : items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
+              </ul>
+            );
+          case EditorJSDataBlockTypesEnum.IMAGE:
+            return <img key={i} src={b.data?.file.url} alt={b.data?.caption} />;
         }
-        if (b.type === 'paragraph') {
-          return <p key={i} dangerouslySetInnerHTML={{ __html: b.data?.text || '' }} />;
-        }
-        if (b.type === 'list') {
-          const items = b.data?.items || [];
-          return b.data?.style === 'ordered' ? (
-            <ol key={i}>
-              {items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
-            </ol>
-          ) : (
-            <ul key={i}>
-              {typeof items === 'object' ? Object.values(items).map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />) : items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
-            </ul>
-          );
-        }
-        // fallback
-        return (
-          <pre key={i} style={{ background: '#f7f7f7', padding: 8, borderRadius: 6 }}>
-            {JSON.stringify(b, null, 2)}
-          </pre>
-        );
       })}
     </div>
   );
 };
 
 export default EditorJSShow;
-
-// -------- helpers --------
-function getBlocks(record, path) {
-  const val = record?.params?.[path];
-  if (Array.isArray(val)) return val;
-  if (typeof val === 'string') {
-    try {
-      const parsed = JSON.parse(val);
-      if (Array.isArray(parsed)) return parsed;
-      if (parsed && Array.isArray(parsed.blocks)) return parsed.blocks;
-    } catch {}
-    return [];
-  }
-  if (val && Array.isArray(val.blocks)) return val.blocks;
-
-  // Unflatten AdminJS params (e.g., "description.0.data.text")
-  const params = record?.params || {};
-  const prefix = `${path}.`;
-  const acc = [];
-  for (const [k, v] of Object.entries(params)) {
-    if (!k.startsWith(prefix)) continue;
-    const rest = k.slice(prefix.length);
-    const m = rest.match(/^(\d+)\.(.+)$/);
-    if (!m) continue;
-    const idx = Number(m[1]);
-    const trail = m[2].split('.');
-    acc[idx] = acc[idx] || {};
-    setDeep(acc[idx], trail, v);
-  }
-  return acc.filter(Boolean);
-}
-
-function setDeep(obj, parts, value) {
-  let o = obj;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const p = parts[i];
-    if (o[p] == null || typeof o[p] !== 'object') o[p] = {};
-    o = o[p];
-  }
-  o[parts[parts.length - 1]] = value;
-}
