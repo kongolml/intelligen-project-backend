@@ -11,6 +11,8 @@ import {
   getPortFolioShowcases
 } from '../middleware/portfolio-item.middleware.js';
 
+import { getTeammates } from '../middleware/teammates.middleware.js';
+
 import { uploadFileAndCreateDbRecord } from '../helpers/import.js';
 
 const router = express.Router();
@@ -126,6 +128,11 @@ router.post('/admin/api/editorjs/upload', upload.single("file"), async (req: Req
   // const mediaFile = await createMediaFile(file);
   // res.json({"test": "testadsf", key: s3Key, url: imageUrl});
   res.json({ success: 1, file: { url: imageUrl, key: s3Key } });
+});
+
+router.get('/teammates', async (req, res) => {
+  const teammates = await getTeammates();
+  res.json(teammates);
 });
 
 export default router;
