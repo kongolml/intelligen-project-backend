@@ -4,6 +4,8 @@
 import { themeReducer } from 'adminjs';
 import { PortfolioItem } from '../../models/portfolio-item.model.js';
 
+import { unflattenPayload } from '../../helpers/editorjs-adminjs.js';
+
 // helpers
 // import { generateDateBasedPath, handleMediaFileCreation } from '../../helpers/media-files.js';
 
@@ -11,6 +13,121 @@ import { Components } from '../component-loader.js';
 
 // constants
 // import { spacesProvider } from '../constants.js';
+
+/**
+ * Unflatten all dotted keys in AdminJS payload (arrays & objects),
+ * convert AdminJS empty-array sentinel, and coerce booleans.
+ * Works for fields like:
+ *   - categories.0
+ *   - mediaFiles.1
+ *   - description.8.data.file.url
+ *   - description.6.data.items = "__FORM_VALUE_EMPTY_ARRAY__"
+ */
+const reconstructEditorJsData = async (request) => {
+  if (request.method !== 'post' || !request?.payload) return request;
+
+  const { payload } = request;
+
+  // --- helpers -------------------------------------------------------------
+
+  // const isIndex = (seg) => /^\d+$/.test(seg);
+
+  // const coerceValue = (val) => {
+  //   if (val === '__FORM_VALUE_EMPTY_ARRAY__') return [];
+  //   if (val === 'true') return true;
+  //   if (val === 'false') return false;
+  //   return val;
+  // };
+
+  /**
+   * Sets value at path (dot-separated), creating objects/arrays along the way.
+   * Numeric segments create arrays; otherwise objects.
+   */
+  // const setDeep = (target, path, value) => {
+  //   const parts = path.split('.');
+  //   let cur = target;
+
+  //   parts.forEach((part, idx) => {
+  //     const last = idx === parts.length - 1;
+  //     const nextPart = parts[idx + 1];
+
+  //     if (last) {
+  //       if (isIndex(part)) {
+  //         if (!Array.isArray(cur)) {
+  //           // If current is not an array, convert it into one
+  //           // (rare, but protects against malformed inputs)
+  //           const replacement = [];
+  //           Object.assign(replacement, cur);
+  //           cur = replacement;
+  //         }
+  //         cur[Number(part)] = coerceValue(value);
+  //       } else {
+  //         cur[part] = coerceValue(value);
+  //       }
+  //       return;
+  //     }
+
+  //     // Not last: ensure container exists for next step
+  //     if (isIndex(part)) {
+  //       // Current level should be array
+  //       if (!Array.isArray(cur)) {
+  //         // If cur is an object, convert to array preserving nothing (clean slate)
+  //         // If cur is undefined, create empty array
+  //         // In practice, this will be a fresh branch and just becomes an array
+  //         const arr = [];
+  //         // We can't reassign parent's reference directly here,
+  //         // so we rely on the caller passing `cur` by reference in the parent object.
+  //         // Therefore only safe when called with proper object reference chain.
+  //         // To guarantee it, we only ever call setDeep with the true root object.
+  //       }
+  //       // Make sure the index exists
+  //       const idxNum = Number(part);
+  //       if (cur[idxNum] == null) {
+  //         // Decide next container by looking ahead
+  //         const nextContainer = isIndex(nextPart) ? [] : {};
+  //         cur[idxNum] = nextContainer;
+  //       }
+  //       cur = cur[idxNum];
+  //     } else {
+  //       // Current level should be object
+  //       if (typeof cur[part] !== 'object' || cur[part] == null || Array.isArray(cur[part])) {
+  //         // Decide next container by looking ahead
+  //         const nextContainer = isIndex(nextPart) ? [] : {};
+  //         cur[part] = nextContainer;
+  //       }
+  //       cur = cur[part];
+  //     }
+  //   });
+  // };
+
+  // // --- rebuild payload -----------------------------------------------------
+
+  // const newPayload = {};
+
+  // // 1) First, copy all non-dotted keys as-is (but with boolean coercion)
+  // for (const key in payload) {
+  //   if (!payload.hasOwnProperty(key)) continue;
+  //   if (!key.includes('.')) {
+  //     newPayload[key] = coerceValue(payload[key]);
+  //   }
+  // }
+
+  // // 2) Then process dotted keys into nested structure
+  // for (const key in payload) {
+  //   if (!payload.hasOwnProperty(key)) continue;
+  //   if (key.includes('.')) {
+  //     setDeep(newPayload, key, payload[key]);
+  //   }
+  // }
+
+  // 3) Assign rebuilt payload back to request
+  // request.payload = newPayload;
+
+  console.log('payload', payload);
+
+  return request;
+};
+
 
 export const portfolioItemResource = {
   resource: PortfolioItem,
@@ -24,6 +141,7 @@ export const portfolioItemResource = {
       description: {
         // type: 'richtext',
         type: 'mixed', // Mixed JSON – we’ll edit with a custom component
+        // isArray: true,
         position: 2,
         isVisible: {
           list: false,
@@ -68,6 +186,20 @@ export const portfolioItemResource = {
         isVisible: false,
       },
     },
+    // actions: {
+    //   new:  { before: [unflattenPayload] },
+    //   edit: { before: [unflattenPayload] },
+    // }
+    // actions: {
+    //   new: {
+    //     // Intercept data before a new record is created
+    //     before: [reconstructEditorJsData],
+    //   },
+    //   edit: {
+    //     // Intercept data before an existing record is updated
+    //     before: [reconstructEditorJsData],
+    //   }
+    // }
     // actions: {
     //   edit: {
     //     before: async (req) => {

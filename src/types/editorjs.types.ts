@@ -4,6 +4,7 @@ export enum EditorJSDataBlockTypesEnum {
 	HEADER = "header",
 	LIST = "list",
 	IMAGE = "image",
+	COLUMNS = "columns",
 }
 
 interface EditorJSDataBlockParagraph {
@@ -42,5 +43,14 @@ interface EditorJSDataBlockImage {
 	};
 }
 
+interface EditorJSDataBlockColumns {
+	type: EditorJSDataBlockTypesEnum.COLUMNS;
+	data: {
+		cols: {
+			blocks: EditorJSDataBlock[];
+		}[];
+	};
+}
 
-export type EditorJSDataBlock = { id?: string } & (EditorJSDataBlockParagraph | EditorJSDataBlockHeader | EditorJSDataBlockList | EditorJSDataBlockImage);
+
+export type EditorJSDataBlock = { id?: string } & (EditorJSDataBlockParagraph | EditorJSDataBlockHeader | EditorJSDataBlockList | EditorJSDataBlockImage | EditorJSDataBlockColumns);

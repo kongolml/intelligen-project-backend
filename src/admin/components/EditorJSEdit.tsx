@@ -1,13 +1,14 @@
 // admin/components/EditorJSEdit.jsx
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import EditorJS from '@editorjs/editorjs';
 import Paragraph from '@editorjs/paragraph';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
 import ImageTool from '@editorjs/image';
+import editorjsColumns from '@calumk/editorjs-columns';
+import { unflatten } from 'flat';
 
-// helpers
-import { convertEditorJSDataToAdminJS, convertAdminJSDataToEditorJS } from '../../helpers/editorjs-adminjs.js';
+
 
 /** @type {import('adminjs').BasePropertyProps} */
 const EditorJSEdit = (props) => {
@@ -16,17 +17,30 @@ const EditorJSEdit = (props) => {
   const holderId = `editorjs-${path}`;
   const editorRef = useRef(null);
 
+  const [text, setText] = useState('');
+
   // Guards to prevent focus loss
   const hydratedOnceRef = useRef(false); // did we hydrate from server once?
   const fromEditorRef = useRef(false); // was the last change triggered by our onChange?
   const lastSentJSONRef = useRef(''); // last JSON we sent to AdminJS (to avoid redundant updates)
   const saveTimerRef = useRef(null); // debounce timer
 
-  const storedBlocks = useMemo(
-    () => convertAdminJSDataToEditorJS(record?.params || {}, 'description'),
+  const editorJsBlocks = useMemo(
+    () => {
+      const unflattened = unflatten(record?.params || {}, { object: false });
+
+      return unflattened?.[property.path];
+    },
+    // () => record?.params,//convertAdminJSDataToEditorJS(record?.params || {}, 'description'),
     [record?.params, path]
   );
-  const storedBlocksJSON = useMemo(() => JSON.stringify(storedBlocks), [storedBlocks]);
+  const storedBlocksJSON = useMemo(() => JSON.stringify(editorJsBlocks), [editorJsBlocks]);
+
+   // AdminJS (GET) should give you the array directly:
+  //  const blocks = useMemo(() => {
+  //   const val = record?.params?.[property.path];
+  //   return Array.isArray(val) ? val : []; // fallback empty if absent
+  // }, [record, property.path]);
 
   // Init once
   useEffect(() => {
@@ -36,10 +50,10 @@ const EditorJSEdit = (props) => {
     // @ts-ignore
     const editor = new EditorJS({
       holder: holderId,
-      data: {
-        // @ts-ignore
-        blocks: storedBlocks?.length ? storedBlocks : [{ type: 'paragraph', data: { text: '' } }],
-      },
+      // data: {
+      //   // @ts-ignore
+      //   blocks: editorJsBlocks?.length ? editorJsBlocks : [{ type: 'paragraph', data: { text: '' } }],
+      // },
       tools: {
         paragraph: Paragraph,
         header: Header,
@@ -77,6 +91,18 @@ const EditorJSEdit = (props) => {
             },
           },
         },
+        columns: {
+          class : editorjsColumns,
+          config : {
+            EditorJsLibrary : EditorJS, // Pass the library instance to the columns instance.
+            tools : {
+              header: Header,
+              // alert : Alert,
+              paragraph : Paragraph,
+              // delimiter : Delimiter
+          } // IMPORTANT! ref the column_tools
+          }
+        },
       },
       async onChange() {
         // Debounce a little to reduce churn
@@ -87,12 +113,18 @@ const EditorJSEdit = (props) => {
             const blocks = output.blocks || [];
             const json = JSON.stringify(blocks);
 
-            const adminJSData = convertEditorJSDataToAdminJS(blocks);
+            // const c = convertEditorJSDataToAdminJS(blocks);
+            const adminJSData = blocks;
+
+            // const jsonString = JSON.stringify(adminJSData);
 
             // Avoid echo loops: only send if changed vs lastSent
             if (json !== lastSentJSONRef.current) {
               fromEditorRef.current = true; // mark that the next param change is ours
               lastSentJSONRef.current = json;
+
+              setText(json);
+              console.log('adminJSData', adminJSData);
               onChange(path, adminJSData); // send JSON array; AdminJS will flatten
             }
           } catch (e) {
@@ -125,7 +157,7 @@ const EditorJSEdit = (props) => {
     if (!hydratedOnceRef.current) {
       hydratedOnceRef.current = true;
       const nextBlocks = JSON.parse(storedBlocksJSON);
-      editor.isReady.then(() => editor.render({ blocks: nextBlocks.description.blocks })).catch(console.error);
+      editor.isReady.then(() => editor.render({ blocks: nextBlocks })).catch(console.error);
     }
   }, [storedBlocksJSON]);
 
@@ -134,6 +166,9 @@ const EditorJSEdit = (props) => {
       <div style={{ border: '1px solid #D9D9D9', borderRadius: 6, padding: 8 }}>
         <div id={holderId} style={{ minHeight: 220 }} />
       </div>
+      <code>
+        <pre>{text}</pre>
+      </code>
       <style>
         {`
     #${holderId} .ce-header { font-weight: 600; line-height: 1.3; margin: 12px 0; }
