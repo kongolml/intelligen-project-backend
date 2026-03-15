@@ -10,6 +10,7 @@ import { componentLoader, Components } from '../component-loader.js';
 
 // constants
 import { spacesProvider } from '../constants.js';
+import { UploadTarget } from '../../types/adminjs.types.js';
 
 export const mediaFileResource = {
   resource: MediaFile,
@@ -36,6 +37,21 @@ export const mediaFileResource = {
       uploadFile: {
         type: 'mixed',
         isVisible: { list: false, show: false, edit: true, filter: false, new: true },
+      },
+      // UI-only virtual dropdown
+      fileCategory: {
+        type: 'string',
+        isVisible: { list: false, filter: false, show: false, edit: true },
+        isRequired: false,
+        availableValues: [
+          { value: UploadTarget.PORTFOLIO, label: 'Portfolio' },
+          { value: UploadTarget.TEAMMATE, label: 'Teammate' }
+        ],
+      },
+      name: {
+        type: 'string',
+        isVisible: { list: false, filter: false, show: false, edit: true },
+        isRequired: false,
       },
     },
     sort: {
@@ -82,7 +98,8 @@ export const mediaFileResource = {
       },
       uploadPath: (record, filename) => {
         const recordId = record.id() || 'temp';
-        const path = generateDateBasedPath(recordId, filename);
+        const target = record?.params?.fileCategory;
+        const path = generateDateBasedPath(recordId, filename, target);
         return path;
       },
       validation: {

@@ -11,7 +11,16 @@ export const teammateResource = {
     properties: {
       _id: { isVisible: false },
       name: { isRequired: true },
-      title: { isRequired: true }
+      title: { isRequired: true },
+      image: {
+        isRequired: true,
+        isArray: false,
+        reference: 'MediaFile',
+        isVisible: { list: false, show: true, edit: true, filter: false },
+        // components: {
+        //   list: Components.MediaFileCustomPage
+        // }
+      },
     },
   },
 };

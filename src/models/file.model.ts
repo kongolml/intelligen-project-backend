@@ -4,6 +4,7 @@ interface IMediaFile {
   s3Key: string;
   bucket: string;
   mime: string;
+  name?: string;
   // portfolioItems: mongoose.Schema.Types.ObjectId[];
 }
 
@@ -12,6 +13,7 @@ const MediaFileSchema = new Schema<IMediaFile>({
   bucket: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
   mime: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
   // portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
+  name: { type: String, required: false },
 }, {
   timestamps: true,
   collection: 'media_files',

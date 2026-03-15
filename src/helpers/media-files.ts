@@ -4,7 +4,9 @@ import mongoose from 'mongoose';
 import { MediaFile } from '../models/file.model.js';
 import { PortfolioItem } from '../models/portfolio-item.model.js';
 
-export const generateDateBasedPath = (recordId = null, filename) => {
+import { UploadTarget } from '../types/adminjs.types.js';
+
+export const generateDateBasedPath = (recordId = null, filename, category: UploadTarget = UploadTarget.PORTFOLIO) => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -27,7 +29,7 @@ export const generateDateBasedPath = (recordId = null, filename) => {
   // if (recordId && recordId !== 'temp') {
     // return `portfolio/${year}/${month}/${day}/${recordId}/${cleanFilename}`;
   // } else {
-    return `portfolio/${year}/${month}/${day}/${cleanFilename}`;
+    return `${category}/${year}/${month}/${day}/${cleanFilename}`;
   // }
 }
 
