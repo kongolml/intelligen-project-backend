@@ -3,14 +3,19 @@ import express from 'express';
 import AdminJS from 'adminjs';
 import { buildAuthenticatedRouter } from '@adminjs/express';
 import expressFormidable from 'express-formidable';
+import sessionFileStore from 'session-file-store';
 
 import provider from './admin/auth-provider.js';
 import options from './admin/options.js';
 import initializeDb from './db/index.js';
 import { importPortfolioItems, createMediaFilesFromUrls } from './helpers/import.js';
 import publicApiRouter from './routes/public-api.js';
+import session from 'express-session';
 
 const port = process.env.PORT || 3000;
+
+const isDev = process.env.NODE_ENV !== 'production';
+const FileStore = isDev ? sessionFileStore(session) : null;
 
 const start = async () => {
   const app = express();
@@ -36,6 +41,7 @@ console.log("start1")
     },
     null,
     {
+      ...(isDev && FileStore ? { store: new FileStore({ path: '.sessions', retries: 0 }) } : {}),
       secret: process.env.COOKIE_SECRET,
       saveUninitialized: true,
       resave: true,
