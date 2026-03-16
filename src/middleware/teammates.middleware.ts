@@ -3,6 +3,9 @@ import { Teammate } from "@/models/teammate.model.js";
 // middleware
 import { prepareMediaFileForResponse } from './media-file.middleware.js';
 
+// helpers
+import { getMediaUrl } from '../helpers/url.js';
+
 const prepareTeammateForResponse = (teammates: any) => {
     return teammates.map((teammate) => ({
         id: teammate._id,
@@ -21,7 +24,7 @@ export const getTeammates = async () => {
             doc
                 ? {
                     id: doc._id.toString(),
-                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}`,
+                    url: getMediaUrl(doc.bucket, doc.s3Key),
                 }
                 : null,
         }).lean();

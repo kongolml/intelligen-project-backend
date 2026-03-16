@@ -5,6 +5,9 @@ import { PortfolioItem } from '@models/portfolio-item.model.js';
 // middleware
 import { prepareMediaFileForResponse } from './media-file.middleware.js';
 
+// helpers
+import { getMediaUrl } from '../helpers/url.js';
+
 const preparePortfolioItemForResponse = (portfolioItems: any) => {
     return portfolioItems.map((item) => ({
       id: item._id,
@@ -43,7 +46,7 @@ export const getPortfolioItems = async () => {
             options: {}, // no lean here — it's already lean on root
             transform: (doc: any) => ({
                 id: doc._id.toString(),
-                url: `https://${doc.bucket}.fra1.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                url: getMediaUrl(doc.bucket, doc.s3Key),
             })
         })
         .populate({
@@ -87,7 +90,7 @@ export const getRandomDemoPortfolioItem = async () => {
                 select: 's3Key bucket',
                 transform: (doc: any) => ({
                     id: doc._id.toString(),
-                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                    url: getMediaUrl(doc.bucket, doc.s3Key),
                 })
             }]);
         }
@@ -121,7 +124,7 @@ export const getPortFolioShowcases = async (limit?: number) => {
             options: {}, // no lean here — it's already lean on root
             transform: (doc: any) => ({
                 id: doc._id.toString(),
-                url: `https://${doc.bucket}.fra1.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                url: getMediaUrl(doc.bucket, doc.s3Key),
             })
         })
         .populate({
@@ -145,7 +148,7 @@ export const getPortfolioItemById = async (id: string) => {
                 select: 's3Key bucket',
                 transform: (doc: any) => ({
                     id: doc._id.toString(),
-                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                    url: getMediaUrl(doc.bucket, doc.s3Key),
                 })
             })
         .populate({
@@ -167,7 +170,7 @@ export const getPortfolioItemBySlug = async (slug: string) => {
                 select: 's3Key bucket',
                 transform: (doc: any) => ({
                     id: doc._id.toString(),
-                    url: `https://${doc.bucket}.${process.env.DIGITALOCEAN_SPACE_REGION}.digitaloceanspaces.com/${doc.s3Key}` // manual virtual substitute
+                    url: getMediaUrl(doc.bucket, doc.s3Key),
                 })
             })
         .populate({

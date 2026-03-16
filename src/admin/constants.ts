@@ -1,8 +1,8 @@
 import AWS from 'aws-sdk';
 
 export const DEFAULT_ADMIN = {
-  email: 'admin@example.com',
-  password: 'password',
+  email: process.env.ADMIN_EMAIL!,
+  passwordHash: process.env.ADMIN_PASSWORD_HASH!,
 };
 
 export const spacesProvider = {

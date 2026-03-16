@@ -1,5 +1,6 @@
 // admin/components/EditorJSShow.jsx
 import React from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 
 // types
 import { EditorJSDataBlockTypesEnum } from '../../types/editorjs.types.js';
@@ -23,18 +24,18 @@ const EditorJSShow = (props) => {
         switch (b.type) {
           case EditorJSDataBlockTypesEnum.HEADER:
             const Tag = `h${b.data?.level || 2}` as keyof JSX.IntrinsicElements;
-            return <Tag key={i} dangerouslySetInnerHTML={{ __html: b.data?.text || '' }} />;
+            return <Tag key={i} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(b.data?.text || '') }} />;
           case EditorJSDataBlockTypesEnum.PARAGRAPH:
-            return <p key={i} dangerouslySetInnerHTML={{ __html: b.data?.text || '' }} />;
+            return <p key={i} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(b.data?.text || '') }} />;
           case EditorJSDataBlockTypesEnum.LIST:
             const items = b.data?.items || [];
             return b.data?.style === 'ordered' ? (
               <ol key={i}>
-                {items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
+                {items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(it) }} />)}
               </ol>
             ) : (
               <ul key={i}>
-                {typeof items === 'object' ? Object.values(items).map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />) : items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: it }} />)}
+                {typeof items === 'object' ? Object.values(items).map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(it as string) }} />) : items.map((it, k) => <li key={k} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(it) }} />)}
               </ul>
             );
           case EditorJSDataBlockTypesEnum.IMAGE:

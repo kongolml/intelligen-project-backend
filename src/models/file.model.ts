@@ -1,4 +1,5 @@
 import mongoose, { model, Schema } from 'mongoose';
+import { getMediaUrl } from '../helpers/url.js';
 
 interface IMediaFile {
   s3Key: string;
@@ -23,7 +24,7 @@ const MediaFileSchema = new Schema<IMediaFile>({
 
 // Virtual to get file URL
 MediaFileSchema.virtual('url').get(function() {
-  return `https://${this.bucket}.${process.env.DIGITALOCEAN_SPACE_HOST}/${this.s3Key}`;
+  return getMediaUrl(this.bucket, this.s3Key);
 });
 
 // Indexes for better performance
