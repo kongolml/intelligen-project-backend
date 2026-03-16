@@ -16,7 +16,13 @@ import { getTeammates } from '../middleware/teammates.middleware.js';
 import { uploadFileAndCreateDbRecord } from '../helpers/import.js';
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+
+const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
 
 router.get('/portfolio-categories', async (req, res) => {
   try {
@@ -100,35 +106,35 @@ router.get('/portfolio/:slug', async (req, res) => {
   }
 });
 
-router.post('/admin/api/editorjs/upload', upload.single("file"), async (req: Request & { file?: any }, res: Response) => {
-  // const { file } = req.body;
-  if (!req.file) return res.status(400).json({ success: 0, error: "No file" });
+router.post(
+  '/admin/api/editorjs/upload',
+  upload.single('file'),
+  async (req: Request & { file?: any; session?: any }, res: Response) => {
+    if (!req.session?.adminUser) {
+      return res.status(401).json({ success: 0, error: 'Unauthorized' });
+    }
 
-    const buffer = req.file.buffer;
-    const contentType = req.file.mimetype || "application/octet-stream";
-    const originalFilename = req.file.originalname;
+    if (!req.file) return res.status(400).json({ success: 0, error: 'No file' });
 
-    // Optional: probe image size
-    // let width: number | undefined;
-    // let height: number | undefined;
-    // try {
-    //   const meta = await sharp(buffer).metadata();
-    //   width = meta.width;
-    //   height = meta.height;
-    // } catch {}
+    if (!ALLOWED_IMAGE_MIMES.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        success: 0,
+        error: `Invalid file type: ${req.file.mimetype}. Allowed: ${ALLOWED_IMAGE_MIMES.join(', ')}`,
+      });
+    }
 
-    // Upload to DO Spaces
+    const { buffer, mimetype: contentType, originalname: originalFilename } = req.file;
+
     const { key: s3Key, url: imageUrl } = await uploadFileAndCreateDbRecord(
       buffer,
       contentType,
       req.body.portfolioItemId,
       originalFilename,
     );
-  console.log(req);
-  // const mediaFile = await createMediaFile(file);
-  // res.json({"test": "testadsf", key: s3Key, url: imageUrl});
-  res.json({ success: 1, file: { url: imageUrl, key: s3Key } });
-});
+
+    return res.json({ success: 1, file: { url: imageUrl, key: s3Key } });
+  },
+);
 
 router.get('/teammates', async (req, res) => {
   const teammates = await getTeammates();

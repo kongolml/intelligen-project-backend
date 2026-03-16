@@ -7,6 +7,7 @@ import { MediaFile } from '../models/file.model.js';
 
 // helpers
 import { generateDateBasedPath } from '../helpers/media-files.js';
+import { getMediaUrl } from '../helpers/url.js';
 
 
 const portfolioItems = [
@@ -1115,7 +1116,7 @@ export async function uploadFileAndCreateDbRecord(
   portfolioItemId?: string,
   originalName?: string
 ): Promise<any> {
-  const originalFilename = originalName || 'manuallyupplaoded-test.png'; // urlParts.pathname.split('/').pop() || 'image';
+  const originalFilename = originalName || 'uploaded-file.png';
 
   const s3Key = generateDateBasedPath(null, originalFilename);
 
@@ -1152,5 +1153,6 @@ export async function uploadFileAndCreateDbRecord(
       },
     });
 
-    return await mediaFile.save();
+    await mediaFile.save();
+    return { key: mediaFile.s3Key, url: getMediaUrl(mediaFile.bucket, mediaFile.s3Key), _id: mediaFile._id };
 }

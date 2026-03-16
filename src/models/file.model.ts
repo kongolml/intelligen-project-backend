@@ -6,15 +6,21 @@ interface IMediaFile {
   bucket: string;
   mime: string;
   name?: string;
-  // portfolioItems: mongoose.Schema.Types.ObjectId[];
+  originalName?: string;
+  size?: number;
+  portfolioItems?: mongoose.Types.ObjectId[];
+  metadata?: Record<string, unknown>;
 }
 
 const MediaFileSchema = new Schema<IMediaFile>({
   s3Key: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
   bucket: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
   mime: { type: String, required: false }, // TODO: resolve thise somehow. for now: required is false, otherwise we fail validation during file upload
-  // portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
   name: { type: String, required: false },
+  originalName: { type: String, required: false },
+  size: { type: Number, required: false },
+  portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
+  metadata: { type: Schema.Types.Mixed },
 }, {
   timestamps: true,
   collection: 'media_files',
@@ -27,8 +33,7 @@ MediaFileSchema.virtual('url').get(function() {
   return getMediaUrl(this.bucket, this.s3Key);
 });
 
-// Indexes for better performance
-// MediaFileSchema.index({ portfolioItems: 1 });
-// MediaFileSchema.index({ mime: 1 });
+MediaFileSchema.index({ portfolioItems: 1 });
+MediaFileSchema.index({ mime: 1 });
 
 export const MediaFile = model<IMediaFile>('MediaFile', MediaFileSchema);

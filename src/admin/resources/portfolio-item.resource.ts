@@ -1,10 +1,13 @@
 // import uploadFeature from '@adminjs/upload';
 
+import fs from 'node:fs';
+
 // models
 import { themeReducer } from 'adminjs';
 import { PortfolioItem } from '../../models/portfolio-item.model.js';
 
 import { unflattenPayload } from '../../helpers/editorjs-adminjs.js';
+import { uploadFileAndCreateDbRecord } from '../../helpers/import.js';
 
 // helpers
 // import { generateDateBasedPath, handleMediaFileCreation } from '../../helpers/media-files.js';
@@ -129,6 +132,35 @@ const reconstructEditorJsData = async (request) => {
 };
 
 
+const handleThumbnailUpload = async (request) => {
+  if (request.method !== 'post' || !request?.payload) return request;
+
+  const { payload } = request;
+  const file = payload.uploadThumbnail;
+
+  console.log('[handleThumbnailUpload] file:', file);
+  console.log('[handleThumbnailUpload] file type:', typeof file);
+  console.log('[handleThumbnailUpload] payload keys:', Object.keys(payload));
+  console.log('[handleThumbnailUpload] thumbnail value:', payload.thumbnail);
+
+  // Skip if no file uploaded
+  if (!file || !file.path) return request;
+
+  if (!file.type?.startsWith('image/')) {
+    throw new Error('Uploaded thumbnail must be an image');
+  }
+
+  const buffer = await fs.promises.readFile(file.path);
+  const result = await uploadFileAndCreateDbRecord(buffer, file.type, undefined, file.name);
+
+  console.log('[handleThumbnailUpload] upload result _id:', result._id);
+
+  payload.thumbnail = result._id.toString();
+  delete payload.uploadThumbnail;
+
+  return request;
+};
+
 export const portfolioItemResource = {
   resource: PortfolioItem,
   options: {
@@ -214,9 +246,15 @@ export const portfolioItemResource = {
       thumbnail: {
         reference: 'MediaFile',
         isVisible: { list: false, show: true, edit: true, filter: false },
-        // components: {
-        //   list: Components.MediaFileCustomPage
-        // }
+        components: {
+          show: Components.ThumbnailShow,
+        },
+      },
+      uploadThumbnail: {
+        isVisible: { list: false, show: false, edit: true, filter: false },
+        components: {
+          edit: Components.ThumbnailUpload,
+        },
       },
       // Virtual field for uploading new files
       // uploadFiles: {
@@ -227,40 +265,10 @@ export const portfolioItemResource = {
         isVisible: false,
       },
     },
-    // actions: {
-    //   new:  { before: [unflattenPayload] },
-    //   edit: { before: [unflattenPayload] },
-    // }
-    // actions: {
-    //   new: {
-    //     // Intercept data before a new record is created
-    //     before: [reconstructEditorJsData],
-    //   },
-    //   edit: {
-    //     // Intercept data before an existing record is updated
-    //     before: [reconstructEditorJsData],
-    //   }
-    // }
-    // actions: {
-    //   edit: {
-    //     before: async (req) => {
-    //       const key = 'description';
-    //       const val = req?.payload?.[key];
-    //       if (typeof val === 'string' && val.trim().startsWith('{')) {
-    //         req.payload[key] = JSON.parse(val);
-    //       }
-    //       return req;
-    //     },
-    //   }
-    // }
-    // actions: {
-    //   new: {
-    //     after: handleMediaFileCreation,
-    //   },
-    //   edit: {
-    //     after: handleMediaFileCreation,
-    //   },
-    // },
+    actions: {
+      new: { before: [handleThumbnailUpload] },
+      edit: { before: [handleThumbnailUpload] },
+    },
   },
   // features: [
   //   // Upload for images (multiple)

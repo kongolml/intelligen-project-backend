@@ -14,6 +14,9 @@ const Components = {
 
     ViewOnSiteLink: componentLoader.add('ViewOnSiteLink', './components/ViewOnSiteLink'),
 
+    ThumbnailUpload: componentLoader.add('ThumbnailUpload', './components/ThumbnailUpload'),
+    ThumbnailShow: componentLoader.add('ThumbnailShow', './components/ThumbnailShow'),
+
     // other custom components
 }
 
