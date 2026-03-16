@@ -1,7 +1,10 @@
 import mongoose, { model, Schema } from 'mongoose';
 
 export interface IPortfolioItem {
-  name: string;
+  name: { en?: string; uk?: string };
+  subtitle?: { en?: string; uk?: string };
+  client?: { en?: string; uk?: string };
+  year?: number;
   description: [Schema.Types.Mixed];
   categories: mongoose.Schema.Types.ObjectId[];
   thumbnail?: mongoose.Schema.Types.ObjectId;
@@ -12,7 +15,10 @@ export interface IPortfolioItem {
 
 export const PortfolioItemSchema = new Schema<IPortfolioItem>(
   {
-    name: { type: String, required: true },
+    name: { type: { en: String, uk: String }, required: true },
+    subtitle: { type: { en: String, uk: String } },
+    client: { type: { en: String, uk: String } },
+    year: { type: Number },
     description: { type: [Schema.Types.Mixed] },
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PortfolioCategory' }],
     thumbnail: { type: mongoose.Schema.Types.ObjectId, ref: 'MediaFile' },
@@ -30,8 +36,5 @@ export const PortfolioItemSchema = new Schema<IPortfolioItem>(
 
 // Indexes for better performance
 PortfolioItemSchema.index({ slug: 1 }); // Single field index for slug lookups
-// PortfolioItemSchema.index({ isShowcase: 1 }); // Index for showcase filtering
-// PortfolioItemSchema.index({ categories: 1 }); // Index for category-based queries
-// PortfolioItemSchema.index({ createdAt: -1 }); // Index for sorting by creation date
 
 export const PortfolioItem = model<IPortfolioItem>('PortfolioItem', PortfolioItemSchema);

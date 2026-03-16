@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import AdminJS from 'adminjs';
 import { buildAuthenticatedRouter } from '@adminjs/express';

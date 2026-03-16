@@ -30,7 +30,8 @@ router.get('/portfolio-categories', async (req, res) => {
 
 router.get('/portfolio', async (req, res) => {
   try {
-    const formattedItems = await getPortfolioItems();
+    const locale = req.query.locale as string | undefined;
+    const formattedItems = await getPortfolioItems(locale);
     res.json(formattedItems);
   } catch (err) {
     console.error('Error fetching portfolio items', err);
@@ -40,7 +41,8 @@ router.get('/portfolio', async (req, res) => {
 
 router.get('/portfolio/showcases', async (req, res) => {
   try {
-    const portfolioItems = await getPortFolioShowcases(8);
+    const locale = req.query.locale as string | undefined;
+    const portfolioItems = await getPortFolioShowcases(8, locale);
 
     res.json(portfolioItems);
   } catch (err) {
@@ -82,12 +84,10 @@ router.get('/portfolio/showcases', async (req, res) => {
 
 router.get('/portfolio/:slug', async (req, res) => {
   const { slug } = req.params;
+  const locale = req.query.locale as string | undefined;
 
   try {
-    // const portfolioItems = await getPortfolioItemById(id);
-    // const item = portfolioItems.find((item) => item.id === id);
-
-    const item = await getPortfolioItemBySlug(slug);
+    const item = await getPortfolioItemBySlug(slug, locale);
 
     if (!item) {
       return res.status(404).json({ error: 'Portfolio item not found' });

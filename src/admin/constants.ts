@@ -1,5 +1,8 @@
 import AWS from 'aws-sdk';
 
+export const DEFAULT_LOCALE = 'en';
+export const SUPPORTED_LOCALES = ['en', 'uk'] as const;
+
 export const DEFAULT_ADMIN = {
   email: process.env.ADMIN_EMAIL!,
   passwordHash: process.env.ADMIN_PASSWORD_HASH!,

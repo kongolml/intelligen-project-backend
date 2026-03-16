@@ -9,6 +9,9 @@ const Components = {
     EditorJSEdit: componentLoader.add('EditorJSEdit', './components/EditorJSEdit'),
     EditorJSShow: componentLoader.add('EditorJSShow', './components/EditorJSShow'),
 
+    TranslatableEdit: componentLoader.add('TranslatableEdit', './components/TranslatableEdit'),
+    TranslatableShow: componentLoader.add('TranslatableShow', './components/TranslatableShow'),
+
     // other custom components
 }
 

@@ -138,6 +138,39 @@ export const portfolioItemResource = {
     },
     properties: {
       _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
+      name: {
+        type: 'mixed',
+        position: 1,
+        isVisible: { list: true, show: true, edit: true, filter: false },
+        components: {
+          edit: Components.TranslatableEdit,
+          show: Components.TranslatableShow,
+        },
+      },
+      'name.en': { isTitle: true, isVisible: { list: false, show: false, edit: false, filter: false } },
+      'name.uk': { isVisible: { list: false, show: false, edit: false, filter: false } },
+      subtitle: {
+        type: 'mixed',
+        position: 1,
+        isVisible: { list: false, show: true, edit: true, filter: false },
+        components: {
+          edit: Components.TranslatableEdit,
+          show: Components.TranslatableShow,
+        },
+      },
+      client: {
+        type: 'mixed',
+        position: 1,
+        isVisible: { list: false, show: true, edit: true, filter: false },
+        components: {
+          edit: Components.TranslatableEdit,
+          show: Components.TranslatableShow,
+        },
+      },
+      year: {
+        position: 1,
+        isVisible: { list: true, show: true, edit: true, filter: true },
+      },
       description: {
         // type: 'richtext',
         type: 'mixed', // Mixed JSON – we’ll edit with a custom component
