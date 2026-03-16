@@ -12,6 +12,8 @@ const Components = {
     TranslatableEdit: componentLoader.add('TranslatableEdit', './components/TranslatableEdit'),
     TranslatableShow: componentLoader.add('TranslatableShow', './components/TranslatableShow'),
 
+    ViewOnSiteLink: componentLoader.add('ViewOnSiteLink', './components/ViewOnSiteLink'),
+
     // other custom components
 }
 

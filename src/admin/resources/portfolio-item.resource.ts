@@ -138,6 +138,14 @@ export const portfolioItemResource = {
     },
     properties: {
       _id: { isVisible: { list: false, show: true, edit: false, filter: false } },
+      slug: {
+        position: 1,
+        isVisible: { list: true, show: true, edit: true, filter: true },
+        components: {
+          list: Components.ViewOnSiteLink,
+          show: Components.ViewOnSiteLink,
+        },
+      },
       name: {
         type: 'mixed',
         position: 1,
